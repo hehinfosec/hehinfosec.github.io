@@ -1,0 +1,6 @@
+- year: 2019
+  projects:
+    - name: Age Classification
+      technologies: Caffe Framework
+      description: The project purpose is to enhance age classification accuracy on Adience benchmark.
+      github: https://github.com/hehinfosec/Adience_age_classification

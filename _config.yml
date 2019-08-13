@@ -1,0 +1,77 @@
+#
+###################################
+# Site wide configuration
+####################################
+#
+title: hehsecurity - Infosec Blog
+email: housam.hajoui@gmail.com
+description: Yet Another Infosec Blog.
+#url: https://www.rootnetsec.com
+baseurl: ""
+keywords: ["blog", "jekyll"]
+
+plugins: [jekyll-paginate]
+paginate_path: "/page:num/"
+paginate: 5
+
+#google_analytics: UA-144686323-1
+
+#
+###################################
+# Jekyll configuration
+####################################
+#
+timezone:          Europe/Warsaw
+markdown:          kramdown
+highlighter:       rouge
+
+
+kramdown:
+  auto_ids: true
+  footnote_nr: 1
+  entity_output: as_char
+  toc_levels: 1..6
+  enable_coderay: false
+
+#
+###################################
+# Site Owner configuration
+####################################
+#
+owner:
+  name: th3s1nn3r
+  avatar: garou.png
+  job: "Security Researcher"
+  bio: "A guy with transverse infosec skills, decided to land on Exploit development soil."
+  email: housam.hajoui@gmail.com
+  disqus-shortname:
+  twitter: th3_3hh
+  facebook: #username
+  google:
+    plus: #username
+    analytics: #UA-144686323-1
+    verify:
+    ad-client:
+    ad-slot:
+  bing-verify:
+  github: hehinfosec
+  gitlab: #username
+  stackoverflow: #123456/username   from a "http://stackoverflow.com/users/123456/username" link
+  linkedin: houssam-el-hajoui-b81a50b7
+  skype: #username
+  xing: #username
+  instagram: #username
+  lastfm: #username
+  tumblr: #username
+  pinterest: #username
+  foursquare: #username
+  steam: #username
+  dribbble: #username
+  youtube: #username
+  soundcloud: #username
+  weibo: #username
+  flickr: #username
+  500px: #username
+  codepen: #username
+  reddit: 
+  telegram: #username

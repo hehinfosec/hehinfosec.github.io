@@ -1,0 +1,6 @@
+# skills section data
+
+label: Ability
+id : cs
+aspects: GNU/Linux, Cryptography, Binary Exploitation, Reverse Engineering, Python, C/C++
+percentage: 90, 70, 60, 55, 80, 55, 70
