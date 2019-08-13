@@ -3,18 +3,15 @@
 # Site wide configuration
 ####################################
 #
-title: hehsecurity - Infosec Blog
+title: hehinfosec - Infosec Blog
 email: housam.hajoui@gmail.com
 description: Yet Another Infosec Blog.
-#url: https://www.rootnetsec.com
 baseurl: ""
 keywords: ["blog", "jekyll"]
 
 plugins: [jekyll-paginate]
 paginate_path: "/page:num/"
 paginate: 5
-
-#google_analytics: UA-144686323-1
 
 #
 ###################################
@@ -49,7 +46,7 @@ owner:
   facebook: #username
   google:
     plus: #username
-    analytics: #UA-144686323-1
+    analytics:
     verify:
     ad-client:
     ad-slot:
