@@ -8,10 +8,12 @@ permalink: /blog/quickzip-corelan
 
 This is my first write-up dealing with binary exploitation, covering a BOF SEH-based vulnerability that is about a decade old.
 
+> If SEH based exploits are new to you, read this [blogpost](https://www.corelan.be/index.php/2009/07/25/writing-buffer-overflow-exploits-a-quick-and-basic-tutorial-part-3-seh/) then come back :)
+
 ## Introduction
 I'm into Windows Exploit Development, and since you are reading this article, I presume you are as well. I mean, come on, isn't it the most challenging, self-rewarding branch of cybersecurity, where you get to burn what's left of your grey matter, attempting to turn a crash in a software, into arbitrary code execution.
 
-So I was going through [Corelan][corelanTuts]'s exploit development tutorials (which, by the way, is one of the few excellent resources on this topic), and stumbled upon his writeup (found [here](https://www.offensive-security.com/vulndev/quickzip-stack-bof-0day-a-box-of-chocolates/)) about a 0-day vulnerability he discovered and the working exploit he made. When you have read the first paragraphs, you'll notice that he keeps challenging you to figure out the next step by yourself. So I made up my mind : why not try to exploit it myself, then come back later and finish reading. That's what I did, and I ended up doing entirely differently.
+So I was going through [Corelan][corelanTuts]'s exploit development tutorials (which, by the way, is one of the few excellent resources on this topic), and stumbled upon his writeup (found [here](https://www.offensive-security.com/vulndev/quickzip-stack-bof-0day-a-box-of-chocolates/)) about a 0-day vulnerability he discovered and the working exploit he made. When you read the first paragraphs, you'll have noticeed that he keeps challenging you to figure out the next step by yourself. So I made up my mind : why not try to exploit it myself, then come back later and finish reading. That's what I did, and I ended up doing it entirely differently.
 
 In this blogpost, i'm going to narrate how I exploited a stack based buffer overflow through abusing the SEH mechanism on a Windows XP SP3 (English) box. So, read on.
 
@@ -59,7 +61,7 @@ with open('./corelanboom.zip', 'wb') as f:
     f.write(ldf_header + payload + cdf_header + payload + eofcdf_header)
 ```
 
-Copy the .zip file to the WinXP box and open it with QuickZip. See picture below.
+Copy the .zip file to the WinXP box and open it with QuickZip.
 
 ![zipboom_open]({{ "/img/zip_open.png" }})
 
@@ -70,7 +72,10 @@ Let's fire up ImmunityDebugger (ImmDbg from now on) and carefully study the cras
 
 ![AV]({{ "/img/AV.png" }})
 
-with the faulty instruction pointing at (**EDI = 0x130000**)
+> Sometimes you hit a user-defined exception (thrown with ntdll!RtlRaiseException) like the one shown below. In this case, all you have to do is a **Shift + F9** to pass it to the program for handling, then you'll hit the above AccessViolation exception.
+> ![user_excpet]({{ "/img/user_except.png" }})
+
+The faulty instruction points at (**EDI = 0x130000**)
 
 ![faulty_instr]({{ "/img/faulty_instr.png" }})
 
@@ -80,9 +85,9 @@ Press **Alt + S** to show the SEH chain of the current thread; one look at it an
 
 ![seh_corrupt]({{ "/img/seh_corrupt2.png" }})
 
-So we have to deal wit an SEH-based exploit. Now go to the stack view (the pane on the bottom-left), and select the address at *SE handler*, then scroll down to the bottom of the stack, where there are no more `A's`. Right-click on the last one, then from the drop-down menu, go to **Adress->relative to selection**. This says, that we have a space of `0x3F8 = 1016` bytes to house our shellcode after the SEH record.
+So we have to deal wit an SEH-based exploit. Now go to the stack view (the pane on the bottom-right), and select the address at *SE handler*, then scroll down to the bottom of the stack, where there are no more `A's`. Right-click on the last one, then from the drop-down menu, go to **Adress->relative to selection**. This says, that we have a space of `0x3F8 = 1016` bytes to house our shellcode after the SEH record.
 
-Sweet!!! Couldn't get any easier than that. If SEH based exploits are new to you, read this [blogpost](https://www.corelan.be/index.php/2009/07/25/writing-buffer-overflow-exploits-a-quick-and-basic-tutorial-part-3-seh/) then come back :). Let's quickly craft a working exploit.
+Sweet!!! Couldn't get any easier than that. Let's quickly craft a working exploit.
 
 First, the offset to the SEH record. In ImmDbg's Python shell at the bottom, type `!mona pattern_create 3000`, then open `C:\Program Files\Immunity Inc\Immunity Debugger\pattern.txt` to retrieve the generated Metasploit Cyclic Pattern (variable *msf* in script)
 
@@ -90,9 +95,6 @@ First, the offset to the SEH record. In ImmDbg's Python shell at the bottom, typ
 
 Replace **payload** content with : `payload = msf + "A"*(4064 - len(msf))`
 Go ahead and generate the .zip file, load it in QuickZip while attached to ImmDbg (or you can press **Ctrl + F2** to restart the debugged program), after that, you trigger the 1st chance exception. Once there, **Alt + S** for SEH chain window to appear, and then, on the corrupt SEH entry, right-click to *Follow address in stack*.
-
-> Sometimes you hit a user-defined exception (thrown with ntdll!RtlRaiseException) like the one shown below. In this case, all you have to do is a **Shift + F9** to pass it to the program for handling, then you'll hit the above AccessViolation exception.
-> ![user_excpet]({{ "/img/user_except.png" }})
 
 ![seh_msf]({{ "/img/seh_msf.png" }})
 
@@ -159,7 +161,7 @@ with open('./corelanboom.zip', 'wb') as f:
     f.write(ldf_header + payload + cdf_header + payload + eofcdf_header)
 ```
 
-This should work just fine. Now, go ahead and try pop your beloved calculator. Oops!! Nothing happens, even inside the debugger, QuickZip just hangs. Now there could be a thousand explanation for this, but I'm betting that this has to do with *BAD CHARACTERS*. Remember how was the paylaod interpreted!!! it's a filename, so, filenaming constraints apply here. To avoid any further unnessceray trial and error, we'll make sure, from now on, our payload only contains valid windows filename characters.
+This should work just fine. Now, go ahead and try pop your beloved calculator. Oops!! Nothing happens, even inside the debugger, QuickZip just hangs. Now there could be a thousand explanation for this, but I'm betting that this has to do with *BAD CHARACTERS*. Remember how the payload was interpreted!!! it's a filename, so, filenaming constraints apply here. To avoid any further unnessceray trial and error, we'll make sure, from now on, our payload only contains valid windows filename characters.
 
 ```
 Valid Windows Filename Characters are all printable ascii except :
@@ -194,7 +196,7 @@ Before triggering the exception, set a breakpoint at your chosen *ppr* address. 
 
 ![zf]({{ "/img/zf.png" }})
 
-The zero flag is **set**, we'll be using **JE** then. Now, the jump offset. *0x06* isn't a valid character; In fact, we can't use a value that is less than *0x20*. Let's do the math : We already have the 2 **0x41** bytes + 4 bytes of the SE Handler, so `0x20 - 2 - 4 = 26` (we can add nops, such as `inc edx = 0x42`, for extra flexibility).
+The zero flag is **set**, we'll be using **JE** then. Now, the jump offset. *0x06* isn't a valid character; In fact, we can't use a value that is lesser than *0x20*. Let's do the math : We already have the 2 **0x41** bytes + 4 bytes of the SE Handler, so `0x20 - 2 - 4 = 26` (we can add nops, such as `inc edx = 0x42`, for extra flexibility).
 
 ```python
 ...
@@ -211,7 +213,7 @@ Now, for the shellcode, we'll be using some msfvenom's alpha encoder. They don't
 msfvenom -p windows/exec cmd=calc.exe -a x86 --platform windows -f python -e x86/alpha_mixed -b '\x22\x2a\x2f\x3c\x3e\x3f\x5c\x7b\x00' BufferRegister=ECX
 ```
 
-Replace the calc shellcode with this one. Let's see how to put the shellcode address in ECX using only ASCII friendly instructions. After the ``JE 0x20`, the following snippet of code will be executed, making ECX holds the required value.
+Replace the calc shellcode with this one. Let's see how to put the shellcode address in ECX using only ASCII friendly instructions. After the `JE 0x20`, the following snippet of code will be executed, making ECX holds the required value.
 
 ```nasm
 ndisasm -pintel -u align.bin
@@ -232,7 +234,7 @@ When execution is transfered to an exception handler, the ntdll's exception disp
 
 ![eh_stack]({{ "/img/se_stack.png" }})
 
-The first four instructions will make **ESP** points at our controlled SEH record (where the jumpcode is). *0x20* bytes from there, resides the *stack align* code (the one above). To avoid any unplausible situation where *EIP* and *ESP* overlap, the three **POPAD** instructios are there to push ESP far away, and that is where we will put our encoded shellcode. The next `push esp; pop ecx` makes ECX points at it. Then a jump is made there (JZ or JNZ, you just have to check the ZF status). Let's single step through it to see how I did come up with the last jump offset **0x33**.
+The first four instructions will make **ESP** points at our controlled SEH record (where the jumpcode is). *0x20* bytes from there, resides the *stack align* code (the one above). To avoid any unwanted situation where *EIP* and *ESP* overlap, the three **POPAD** instructios are there to push ESP far away, and that is where we will put our encoded shellcode. The next `push esp; pop ecx` makes ECX points at it. Then a jump is made there (JZ or JNZ, you just have to check the ZF status). Let's single step through it to see how I did come up with the last jump offset **0x33**.
 
 ```python
 ...
@@ -256,7 +258,7 @@ EIP currently points at *je 0x33* instruction, so we need to put a junk of `0x5c
 
 Go ahead and generate the zip file. Load it in QuickZip and see it crash but not before our precious calc.exe is spawned. **Pwned!!**
 
-> 'pop esp' is the opcode 0x54, or, the backslash '\', that's why you see the extra folder within the zip.
+> 'pop esp' is the opcode 0x54, or, the backslash '\\', that's why you see the extra folder within the zip.
 
 ## Final thoughts
 ???
