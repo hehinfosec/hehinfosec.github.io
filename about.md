@@ -18,5 +18,5 @@ You'll find here a compilation of my works and projects that pertain to informat
 
 ### Contact
 
-{% include _includes/social-links.html %}
+{% include ./_includes/social-links.html %}
 
