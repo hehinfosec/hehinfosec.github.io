@@ -18,4 +18,4 @@ You'll find here a compilation of my works and projects that pertain to informat
 
 ### Contact me
 
-[housam.hajoui@gmail.com](mailto:housam.hajoui@gmail.com)
+See description on the left.
