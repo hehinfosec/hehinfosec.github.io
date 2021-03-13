@@ -16,6 +16,7 @@ You'll find here a compilation of my works and projects that pertain to informat
 
 [Practical Packet Analysis](https://nostarch.com/packetanalysis3) by Chris Sanders.
 
-### Contact me
+### Contact
 
-See description on the left.
+{% include _includes/social-links.html %}
+
